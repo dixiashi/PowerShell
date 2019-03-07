@@ -40,10 +40,10 @@ function GetDurationSecond()
         Add-Type -Path $_
     }
 
-    #if((-not [MediaHelper]) -and -not ([MediaHelper] -is [System.Object]))
-    #{
-    #    Add-Type -TypeDefinition $source -ReferencedAssemblies $ref
-    #}
+    if(-not (Get-Module -Name [MediaHelper]))
+    {
+        Add-Type -TypeDefinition $source -ReferencedAssemblies $ref
+    }
     
     $result = [MediaHelper]::GetDuration($fullPath)
     #$result = "01:01:03"
@@ -65,6 +65,7 @@ function GetDurationSecond()
 workflow Test-workflow
 {
     param([int]$num)
+
     foreach -parallel ($item in 1..$num)
     {
         $url = "http://down010702.tingclass.net/lesson/shi0529/10000/10173/$item.mp3"
@@ -76,8 +77,18 @@ workflow Test-workflow
         {
             Invoke-WebRequest $url -OutFile $fullPath -TimeoutSec $timeOut
         }
-    }
 
+
+        $url = "http://down010702.tingclass.net/lesson/shi0529/10000/10173/$item.doc"
+        $fileName = "$item.doc"
+        $folder = "D:\MyFile\EngLish\Lucy"
+        $fullPath = Join-Path $folder $fileName
+        $timeOut = 30*60
+        if(-not [system.io.file]::Exists($fullPath))
+        {
+            Invoke-WebRequest $url -OutFile $fullPath -TimeoutSec $timeOut
+        }
+    }
 }
 
 function RemoveNotReadyFile()
@@ -95,7 +106,7 @@ function RemoveNotReadyFile()
             {
                 $duration = GetDurationSecond -fullPath $fullPath
 
-                if($duration -lt 60)
+                if($duration -lt 56)
                 {
                     Write-Host $duration
                     Write-Host $fullPath
@@ -125,5 +136,3 @@ function WholeProcess()
 }
 
 WholeProcess
-
-#RemoveNotReadyFile
